@@ -552,6 +552,34 @@ class DocxToMarkdownConverter:
         else:
             return self._format_standard_table(table_data)
     
+    def _format_standard_table(self, table_data) -> str:
+        """Format table as standard markdown table"""
+        if not table_data:
+            return ""
+        
+        # Get the maximum number of columns
+        max_cols = max(len(row) for row in table_data)
+        
+        # Pad rows to have the same number of columns
+        for row in table_data:
+            while len(row) < max_cols:
+                row.append("")
+        
+        # Format as markdown table
+        lines = []
+        
+        # Header row
+        if table_data:
+            header_row = table_data[0]
+            lines.append("| " + " | ".join(cell.replace('\n', ' ').strip() for cell in header_row) + " |")
+            lines.append("| " + " | ".join("---" for _ in header_row) + " |")
+            
+            # Data rows
+            for row in table_data[1:]:
+                lines.append("| " + " | ".join(cell.replace('\n', ' ').strip() for cell in row) + " |")
+        
+        return "\n".join(lines) + "\n\n"
+    
     def _format_two_column_table(self, table_data) -> str:
         """Enhanced two-column layout formatting with better text and image handling"""
         formatted_sections = []

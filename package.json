@@ -1,23 +1,78 @@
 {
   "name": "docx2mdconverter",
-  "displayName": "Docx2MDConverter",
-  "description": "Convert DOCX files to Markdown with advanced formatting, images, and table support.",
-  "version": "0.0.1",
+  "displayName": "Docx2MD Converter",
+  "description": "Convert DOCX and DOC files to Markdown with advanced formatting, images, and table support using Python backend.",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.100.0"
   },
   "categories": [
+    "Formatters",
     "Other"
+  ],
+  "keywords": [
+    "docx",
+    "doc",
+    "markdown",
+    "converter",
+    "word",
+    "document",
+    "python"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "docx2mdconverter.helloWorld",
-        "title": "Microsoft Document to Markdown Converter"
+        "command": "docx2mdconverter.convertDocxToMarkdown",
+        "title": "Convert DOCX/DOC to Markdown",
+        "category": "Docx2MD",
+        "icon": "$(file-symlink-file)"
       }
-    ]
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "docx2mdconverter.convertDocxToMarkdown",
+          "when": "resourceExtname =~ /\\.(docx|doc)$/i",
+          "group": "conversion@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "docx2mdconverter.convertDocxToMarkdown"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Docx2MD Converter",
+      "properties": {
+        "docx2mdconverter.pythonPath": {
+          "type": "string",
+          "default": "python",
+          "description": "Path to Python executable (supports Python 3.6+)",
+          "scope": "machine-overridable"
+        },
+        "docx2mdconverter.outputDirectory": {
+          "type": "string",
+          "default": "TargetMDDirectory",
+          "description": "Default output directory name",
+          "scope": "resource"
+        },
+        "docx2mdconverter.showReport": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show conversion report after completion",
+          "scope": "resource"
+        },
+        "docx2mdconverter.autoOpenResult": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically open the converted markdown file",
+          "scope": "resource"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -37,5 +92,10 @@
     "typescript": "^5.8.3",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://dev.azure.com/shashiztech/Docx2MDConverter/_git/Docx2MDConverter"
+  },
+  "publisher": "shashiztech"
 }

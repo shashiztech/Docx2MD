@@ -9,3 +9,8 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+out/test/**
+!docx_to_markdown_converter.py
+!python/**
+*.vsix
+node_modules
