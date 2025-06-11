@@ -2,6 +2,26 @@
 
 All notable changes to the "Docx2MD Converter" extension will be documented in this file.
 
+## [0.1.2] - 2025-06-10
+
+### 🐛 Bug Fixes
+- **Fixed Context Menu**: Corrected regex pattern for file extension detection to ensure "Convert DOCX/DOC to Markdown" appears in Explorer context menu
+- **Enhanced Menu Accessibility**: Added context menu option to editor title bar for better accessibility
+- **Improved File Detection**: Changed from regex pattern to explicit extension matching for more reliable detection
+
+### 🔧 Technical Changes
+- Updated `when` clause from regex `/\\.(docx|doc)$/i` to explicit `resourceExtname == '.docx' || resourceExtname == '.doc'`
+- Added `editor/title/context` menu location for additional access points
+
+## [0.1.1] - 2025-06-10
+
+### 🎨 Visual Updates
+- **Updated Extension Icon**: Changed to custom docx2markdown_skp icon for better visual identity
+- **Icon Optimization**: Converted JPEG icon to PNG format and resized to standard 128x128 pixels
+
+### 🔧 Maintenance
+- Updated package version for new release
+
 ## [0.1.0] - 2025-06-10
 
 ### 🚀 Initial Release
