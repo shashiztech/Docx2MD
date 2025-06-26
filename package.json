@@ -2,7 +2,7 @@
   "name": "docx2mdconverter",
   "displayName": "Docx2MD Converter",
   "description": "Convert DOCX and DOC files to Markdown with advanced formatting, images, and table support using Python backend.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "engines": {
     "vscode": "^1.100.0"
   },

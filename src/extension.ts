@@ -5,6 +5,13 @@ import { execFile, spawn } from 'child_process';
 
 let outputChannel: vscode.OutputChannel;
 
+// Usage tracking for review prompt
+interface UsageStats {
+    usageCount: number;
+    reviewPromptShown: boolean;
+    firstUsageDate: string;
+}
+
 export function activate(context: vscode.ExtensionContext) {
     console.log('Docx2MD Converter extension is now active!');
 
@@ -14,6 +21,9 @@ export function activate(context: vscode.ExtensionContext) {
     // Register the conversion command
     let convertDisposable = vscode.commands.registerCommand('docx2mdconverter.convertDocxToMarkdown', async (uri?: vscode.Uri) => {
         try {
+            // Track usage for review prompt
+            await trackUsageAndPromptReview(context);
+
             // Get the file path
             let filePath: string;
 
@@ -413,6 +423,96 @@ async function handleConversionSuccess(
         setTimeout(() => {
             vscode.commands.executeCommand('vscode.open', vscode.Uri.file(reportFile));
         }, 2000);
+    }
+}
+
+/**
+ * Track usage and show review prompt after 3 uses
+ */
+async function trackUsageAndPromptReview(context: vscode.ExtensionContext): Promise<void> {
+    try {
+        // Get current usage stats
+        const stats: UsageStats = context.globalState.get('usageStats', {
+            usageCount: 0,
+            reviewPromptShown: false,
+            firstUsageDate: new Date().toISOString()
+        });
+
+        // Increment usage count
+        stats.usageCount++;
+
+        // Update storage
+        await context.globalState.update('usageStats', stats);
+
+        // Show review prompt if conditions are met
+        if (!stats.reviewPromptShown && stats.usageCount >= 3) {
+            // Mark as shown to prevent future prompts
+            stats.reviewPromptShown = true;
+            await context.globalState.update('usageStats', stats);
+
+            // Show the review prompt
+            await showReviewPrompt();
+        }
+    } catch (error) {
+        // Don't let usage tracking errors interfere with main functionality
+        console.log('Error tracking usage:', error);
+    }
+}
+
+/**
+ * Show the review and feedback prompt
+ */
+async function showReviewPrompt(): Promise<void> {
+    const rateExtension = '⭐ Rate & Review';
+    const provideFeedback = '📝 Give Feedback';
+    const notNow = 'Not Now';
+
+    const message = `🎉 Thank you for using Docx2MD Converter! 
+
+This is a free extension and your feedback helps us build more accurate and useful tools. Would you like to rate and review our extension in the marketplace?
+
+Your encouragement motivates us to keep improving! ✨`;
+
+    const choice = await vscode.window.showInformationMessage(
+        message,
+        { modal: false },
+        rateExtension,
+        provideFeedback,
+        notNow
+    );
+
+    switch (choice) {
+        case rateExtension:
+            // Open VS Code Marketplace page for this extension
+            vscode.env.openExternal(vscode.Uri.parse(
+                'https://marketplace.visualstudio.com/items?itemName=shashiztech.docx2mdconverter&ssr=false#review-details'
+            ));
+
+            // Show thank you message after a delay
+            setTimeout(() => {
+                vscode.window.showInformationMessage(
+                    '🙏 Thank you for taking the time to review! Your support means a lot to us.'
+                );
+            }, 2000);
+            break;
+
+        case provideFeedback:
+            // Open Azure DevOps issues page for feedback
+            vscode.env.openExternal(vscode.Uri.parse(
+                'https://dev.azure.com/shashiztech/Docx2MDConverter/_workitems/create/Issue'
+            ));
+
+            vscode.window.showInformationMessage(
+                '💭 Thank you for your willingness to provide feedback! Every suggestion helps us improve.'
+            );
+            break;
+
+        case notNow:
+            // User declined - no action needed
+            vscode.window.showInformationMessage(
+                '👍 No problem! The extension will continue working great for you.'
+            );
+            break;
     }
 }
 

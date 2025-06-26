@@ -2,6 +2,23 @@
 
 All notable changes to the "Docx2MD Converter" extension will be documented in this file.
 
+## [0.1.3] - 2025-06-26
+
+### ✨ New Features
+- **Review & Feedback System**: Added intelligent review prompt that appears once per installation after 3 successful conversions
+- **User Engagement**: Encourages marketplace ratings and feedback to help improve the extension
+- **Smart Prompting**: Non-intrusive system that respects user choice and only asks once
+
+### 🎯 User Experience
+- **Friendly Messaging**: Emphasizes that this is a free extension and feedback helps development
+- **Multiple Options**: Users can rate & review, provide feedback, or dismiss the prompt
+- **Direct Links**: One-click access to marketplace review page and feedback channels
+
+### 🔧 Technical Implementation
+- **Usage Tracking**: Tracks conversion count using VS Code's global state
+- **Privacy Friendly**: Only stores anonymous usage statistics locally
+- **Error Handling**: Review system won't interfere with main conversion functionality
+
 ## [0.1.2] - 2025-06-10
 
 ### 🐛 Bug Fixes
