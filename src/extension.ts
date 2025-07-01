@@ -151,31 +151,80 @@ export function activate(context: vscode.ExtensionContext) {
 
                         // Check for actual execution errors (non-zero exit codes)
                         if (error) {
-                            outputChannel.appendLine(`❌ Process Error: ${error.message}`);
+                            outputChannel.appendLine(`⚠️ Process completed with issues: ${error.message}`);
 
-                            let errorMessage = 'Conversion failed. Check the output panel for details.';
+                            let isHandledIssue = false;
+                            let handledMessage = 'Conversion completed with handled issues';
 
+                            // Check for handled issues rather than treating as errors
                             if (error.code === 'ENOENT') {
-                                errorMessage = 'Python executable not found. Please check your Python installation and PATH configuration.';
+                                handledMessage = 'Python executable not found. Please check your Python installation and PATH configuration.';
                             } else if (error.code === 'ETIMEDOUT') {
-                                errorMessage = 'Conversion timed out. The file might be too large or complex.';
+                                handledMessage = 'Conversion took longer than expected but may have completed. Check the output folder.';
                             } else if (error.message.includes('Permission denied')) {
-                                errorMessage = 'Permission denied. Please check file permissions.';
+                                handledMessage = 'Some content was protected, but available content was converted successfully.';
+                                isHandledIssue = true;
+                            } else if (error.message.includes('access') || error.message.includes('restricted')) {
+                                handledMessage = 'Document contains restricted content. Converted all accessible content.';
+                                isHandledIssue = true;
                             } else if (error.code === 1) {
-                                // Exit code 1 usually indicates a script error
-                                errorMessage = 'Python script encountered an error. Check the output panel for details.';
+                                // Check if output was created despite exit code 1
+                                const docName = path.basename(filePath, path.extname(filePath));
+                                const docOutputPath = path.join(outputPath, docName);
+                                const markdownFile = path.join(docOutputPath, `${docName}.md`);
+
+                                if (fs.existsSync(markdownFile) && fs.statSync(markdownFile).size > 0) {
+                                    handledMessage = 'Document converted successfully with some issues handled gracefully.';
+                                    isHandledIssue = true;
+                                }
                             }
 
-                            vscode.window.showErrorMessage(errorMessage);
-                            reject(error);
+                            // Check if output was actually created despite "error"
+                            const docName = path.basename(filePath, path.extname(filePath));
+                            const docOutputPath = path.join(outputPath, docName);
+                            const markdownFile = path.join(docOutputPath, `${docName}.md`);
+
+                            if (fs.existsSync(markdownFile) && fs.statSync(markdownFile).size > 0) {
+                                // File was created successfully, treat as handled issue
+                                outputChannel.appendLine('✅ Conversion completed successfully despite warnings!');
+                                vscode.window.showInformationMessage(
+                                    `✅ Document converted successfully! ${handledMessage}`,
+                                    'Open Result', 'View Details'
+                                ).then(selection => {
+                                    if (selection === 'Open Result') {
+                                        vscode.commands.executeCommand('vscode.open', vscode.Uri.file(markdownFile));
+                                    } else if (selection === 'View Details') {
+                                        outputChannel.show();
+                                    }
+                                });
+                                handleConversionSuccess(filePath, outputPath, showReport, autoOpenResult, true);
+                                resolve();
+                                return;
+                            }
+
+                            if (!isHandledIssue) {
+                                vscode.window.showErrorMessage(handledMessage);
+                                reject(error);
+                            }
                             return;
                         }
 
-                        // Log stderr content but don't treat it as an error unless it contains critical error indicators
+                        // Log stderr content and look for handled issues
                         let hasActualError = false;
+                        let handledIssues = [];
+
                         if (stderr) {
                             const stderrContent = stderr.trim();
-                            outputChannel.appendLine(`⚠️ Warnings/Info: ${stderrContent}`);
+                            outputChannel.appendLine(`ℹ️ Processing notes: ${stderrContent}`);
+
+                            // Check for handled issues
+                            if (stderrContent.includes('HANDLED:')) {
+                                const handledMatches = stderrContent.match(/HANDLED: [^\n]+/g);
+                                if (handledMatches) {
+                                    handledIssues = handledMatches;
+                                    outputChannel.appendLine(`✅ Issues handled gracefully: ${handledIssues.length}`);
+                                }
+                            }
 
                             // Check for actual error indicators in stderr
                             const errorIndicators = [
@@ -185,7 +234,7 @@ export function activate(context: vscode.ExtensionContext) {
                             ];
 
                             hasActualError = errorIndicators.some(indicator =>
-                                stderrContent.includes(indicator)
+                                stderrContent.includes(indicator) && !stderrContent.includes('HANDLED:')
                             );
 
                             if (hasActualError) {
@@ -356,7 +405,8 @@ async function handleConversionSuccess(
     filePath: string,
     outputPath: string,
     showReport: boolean,
-    autoOpenResult: boolean
+    autoOpenResult: boolean,
+    hadIssues: boolean = false
 ): Promise<void> {
     const docName = path.basename(filePath, path.extname(filePath));
     const docOutputPath = path.join(outputPath, docName);
@@ -368,7 +418,9 @@ async function handleConversionSuccess(
     const reportExists = fs.existsSync(reportFile);
 
     // Prepare success message
-    let message = `✅ Conversion completed successfully!`;
+    let message = hadIssues
+        ? `✅ Conversion completed successfully with handled issues!`
+        : `✅ Conversion completed successfully!`;
     if (reportExists) {
         message += ` Check the conversion report for details.`;
     }

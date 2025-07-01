@@ -2,6 +2,30 @@
 
 All notable changes to the "Docx2MD Converter" extension will be documented in this file.
 
+## [0.1.4] - 2025-07-01
+
+### 🛡️ Enhanced Error Handling & Sensitive Content Support
+- **Advanced Error Recovery**: Comprehensive error handling system that gracefully handles document issues
+- **Sensitive Content Detection**: Automatically detects and handles sensitivity labels, DRM, and protected content
+- **Smart Issue Resolution**: Converts accessible content while safely handling restricted elements
+- **Informative Messaging**: Replaced error messages with helpful handled issue notifications
+
+### 🎯 User Experience Improvements
+- **Handled vs Error Distinction**: Clear differentiation between handled issues and actual errors
+- **Detailed Conversion Reports**: Enhanced reports with issue summaries and technical details
+- **Success Despite Issues**: Shows success messages when conversion completes with handled issues
+- **Progressive Error Handling**: Attempts multiple recovery strategies before failing
+
+### 🔧 Technical Enhancements
+- **ConversionWarning System**: New warning management system for tracking and reporting issues
+- **Sensitivity Label Detection**: Checks for document protection indicators in DOCX files
+- **Graceful Degradation**: Continues processing when encountering non-critical issues
+- **Enhanced Logging**: Better logging and reporting of conversion processes and issues
+
+### 🧹 Project Cleanup
+- **Removed Test Files**: Cleaned up TP_KT.docx and test output directories
+- **Production Ready**: Package now contains only production-ready files
+
 ## [0.1.3] - 2025-06-26
 
 ### ✨ New Features
